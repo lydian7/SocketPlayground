@@ -4,8 +4,10 @@ import SockJS from "sockjs-client";
 import Stomp from "stompjs";
 
 const ChatApp = () => {
+  
   const [inputMessage, setInputMessage] = useState("");
   const [messages, setMessages] = useState([]);
+  
   let sock;
   let stompClient;
   let username = null;
@@ -17,10 +19,12 @@ const ChatApp = () => {
   };
 
   const onMessageReceived = (payload) => {
-    var message = JSON.parse(payload.body);
+    const message = JSON.parse(payload.body);
     console.log(message);
     setMessages([...messages, message.content]);
   };
+
+  console.log(messages);
 
   const sendMessage = (event) => {
     event.preventDefault();
