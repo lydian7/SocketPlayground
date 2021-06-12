@@ -37,7 +37,6 @@ public class ChatController {
     @MessageMapping("/sendMessage")
     @SendTo("/topic/public")
     public ChatMessage sendMessage(@Payload ChatMessage message){
-
         return message;
     }
 
