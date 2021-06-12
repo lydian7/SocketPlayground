@@ -34,10 +34,11 @@ public class ChatController {
         return new ResponseEntity(message, HttpStatus.OK);
      }
 
-    @MessageMapping("/sendMessage")
-    @SendTo("/topic/public")
+    @MessageMapping("/sendMessage") //all messages sent from client to here will be re-directed to below route
+    @SendTo("/topic/public") //sends a message to the /topic/public url that stomp is subscribed to
     public ChatMessage sendMessage(@Payload ChatMessage message){
         return message;
+//        return ("This is what returns from server when you send a message");
     }
 
     @MessageMapping("addUser")

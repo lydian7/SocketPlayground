@@ -17,7 +17,7 @@ public class DataLoader implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        ChatMessage chat1 = new ChatMessage();
-        messageRepository.save(chat1);
+//        ChatMessage chat1 = new ChatMessage();
+//        messageRepository.save(chat1);
     }
 }
