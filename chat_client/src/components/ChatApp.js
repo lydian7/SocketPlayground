@@ -6,7 +6,6 @@ import Stomp from "stompjs";
 import Request from "../services/request";
 
 const ChatApp = () => {
-
   const [inputMessage, setInputMessage] = useState("");
   const [messages, setMessages] = useState([]);
   // const [fetchedMessages, setFetchedMessages] = useState([]);
@@ -14,6 +13,7 @@ const ChatApp = () => {
   const [msgReceived, setMsgReceived] = useState(false);
   const [stompy, setStompy] = useState({});
   const [msgSent, setMsgSent] = useState(false);
+  const [listMsgs, setListMsgs] = useState([]);
 
   let sock = new SockJS("http://localhost:8080/ws");
   let stompClient;
@@ -21,12 +21,12 @@ const ChatApp = () => {
   const request = new Request();
 
   const connect = async () => {
-      // const sock = new SockJS("http://localhost:8080/ws");
-      stompClient = Stomp.over(sock);
-      stompClient.connect({}, onConnected); 
-      // setConnected(true);
-      console.log("socket is connected :", connected)
-      setStompy(stompClient);
+    // const sock = new SockJS("http://localhost:8080/ws");
+    stompClient = Stomp.over(sock);
+    stompClient.connect({}, onConnected);
+    // setConnected(true);
+    console.log("socket is connected :", connected);
+    setStompy(stompClient);
   };
 
   const onConnected = () => {
@@ -37,16 +37,16 @@ const ChatApp = () => {
       {},
       JSON.stringify({ sender: username, type: "JOIN" })
     );
-    console.log("on connected the stompClient is:", stompClient)
+    console.log("on connected the stompClient is:", stompClient);
   };
-
 
   const onMessageReceived = (payload) => {
     const message = JSON.parse(payload.body);
-    console.log("this is the received message",message);
+    console.log("this is the received message", message);
     setMessages([...messages, message]); // ====> messages display if set on receipt, no showing all seems to skip some
     setMsgReceived(!msgReceived);
-    console.log(msgReceived)
+    console.log(msgReceived);
+    fetchAllMessages();
   };
 
   // function connect() {
@@ -74,53 +74,53 @@ const ChatApp = () => {
     request.getAll().then((messages) => setMessages(messages));
   };
 
-  const sendMessage =  (event) => {
+  const sendMessage = (event) => {
     stompClient = stompy;
     event.preventDefault();
-      // console.log("resolved");
-      const newMessage = {
-        content: event.target.message.value.trim(),
-        sender: null,
+    // console.log("resolved");
+    const newMessage = {
+      content: event.target.message.value.trim(),
+      sender: null,
+    };
+    request.post(newMessage);
+    const message = event.target.message.value.trim();
+    // setInputMessage(message);
+    // console.log("this is the message right before it's sent :", message)
+    // console.log("1 if sock is open:", sock.readyState)
+    console.log("stompClient before if check in Send msg:", stompClient);
+    // console.log("stompState before IF check in SEND MSG:", stompy)
+    if (message && stompClient) {
+      var chatMessage = {
+        sender: username,
+        content: message,
+        type: "CHAT",
       };
-      request.post(newMessage);
-      const message = event.target.message.value.trim();
-      // setInputMessage(message);
-      // console.log("this is the message right before it's sent :", message)
-      // console.log("1 if sock is open:", sock.readyState)
-      console.log("stompClient before if check in Send msg:", stompClient) 
-      // console.log("stompState before IF check in SEND MSG:", stompy)
-      if (message && stompClient) {
-        var chatMessage = {
-          sender: username,
-          content: message,
-          type: "CHAT",
-        };
-        stompClient.send("/app/sendMessage", {}, JSON.stringify(chatMessage));
-        console.log("this is the sent message", chatMessage)
-        // setMessages([...messages, message]); ==> doesnt work
-        event.target.message.value = "";
-        setMsgSent(!msgSent);
-      }
+      stompClient.send("/app/sendMessage", {}, JSON.stringify(chatMessage));
+      console.log("this is the sent message", chatMessage);
+      // setMessages([...messages, message]); ==> doesnt work
       event.target.message.value = "";
-      setMsgReceived(!msgReceived)
+      setMsgSent(!msgSent);
+    }
+    event.target.message.value = "";
+    setMsgReceived(!msgReceived);
+    setListMsgs([...listMsgs, newMessage]);
   };
-
-
 
   // useEffect(() => {
   // },[])
 
   useEffect(() => {
     connect();
-  },[]);
-
-  useEffect(() => {
     fetchAllMessages();
-  },[msgReceived])
+  }, []);
 
-  useEffect(() => {
-    fetchAllMessages();
-  },[msgSent])
+  // useEffect(() => {
+  //   fetchAllMessages();
+  // },[msgReceived])
+
+  // useEffect(() => {
+  //   fetchAllMessages();
+  // },[msgSent])
 
   // console.log(messages);
 
@@ -132,18 +132,20 @@ const ChatApp = () => {
     });
   }
 
+  const newListMessages = listMsgs.map((msg, index) => {
+    return <li key={index}>{msg.content}</li>;
+  });
   return (
     <>
       <form action="" onSubmit={sendMessage}>
-        <input type="text" name="message" 
-        // onChange = {(e) => setInputMessage(e.target.value)}
+        <input
+          type="text"
+          name="message"
+          // onChange = {(e) => setInputMessage(e.target.value)}
         />
-        <input type="submit"/>
+        <input type="submit" />
       </form>
-      <ul>
-        {messageList ? messageList : null}
-        <li>{}</li>
-      </ul>
+      <ul>{messageList ? messageList : fetchAllMessages()}</ul>
     </>
   );
 };
